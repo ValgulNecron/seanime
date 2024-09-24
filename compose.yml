@@ -1,6 +1,10 @@
 service:
   seanime:
-
+    image:
+    volumes:
+      - ./downloads:/downloads
+      - ./config:/root/.config/seanime
+    # network_mode: "service:gluetun" # uncomment if using gluetun
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -16,6 +20,7 @@ service:
       - 6881:6881
       - 6881:6881/udp
     restart: unless-stopped
+  # network_mode: "service:gluetun" # uncomment if using gluetun
 
 #  gluetun:
 #    image: qmcgaw/gluetun

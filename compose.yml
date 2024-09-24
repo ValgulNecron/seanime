@@ -41,5 +41,6 @@ services:
 
       #- 43211:43211 #seanime
     #environment:
+      #- FIREWALL_INPUT_PORTS=8080,6881,43211
       # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
       #- VPN_SERVICE_PROVIDER=

@@ -1,22 +1,10 @@
-FROM golang:1.20-alpine AS build
-
-WORKDIR /app
-
-COPY go.mod go.sum ./
-
-RUN go mod download
-
-COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
-
 FROM alpine:latest  
 
 WORKDIR /app/
 
 RUN mkdir /downloads
 
-COPY --from=build /app/main .
+RUN wget https://github.com/5rahim/seanime/releases/download/v2.1.1/seanime-2.1.1_Linux_x86_64.tar.gz && tar -xzf seanime-2.1.1_Linux_x86_64.tar.gz
 
-CMD ["./main"]
+CMD ["./seanime"]
 

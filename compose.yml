@@ -4,9 +4,9 @@ services:
     volumes:
       - ./downloads:/downloads
       - ./config:/root/.config/Seanime
-    # network_mode: "service:gluetun" # uncomment if using gluetun
-    ports:
+    ports: 
       - 43211:43211
+    #network_mode: "service:gluetun" # uncomment if using gluetun also comment all ports section
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -22,18 +22,24 @@ services:
       - 6881:6881
       - 6881:6881/udp
     restart: unless-stopped
-  # network_mode: "service:gluetun" # uncomment if using gluetun
+    #network_mode: "service:gluetun" # uncomment if using gluetun also comment all ports section
 
-#  gluetun:
-#    image: qmcgaw/gluetun
-#    cap_add:
-#      - NET_ADMIN
-#    devices:
-#      - /dev/net/tun:/dev/net/tun
-#    ports:
-#      - 8888:8888/tcp # HTTP proxy
-#      - 8388:8388/tcp # Shadowsocks
-#      - 8388:8388/udp # Shadowsocks
-#    environment:
+  #gluetun: #so your torrent use a vpn (would be bad if it was your ip)
+    #image: qmcgaw/gluetun
+    #cap_add:
+      #- NET_ADMIN
+    #devices:
+      #- /dev/net/tun:/dev/net/tun
+    #ports:
+      #- 8888:8888/tcp # HTTP proxy
+      #- 8388:8388/tcp # Shadowsocks
+      #- 8388:8388/udp # Shadowsocks
+
+      #- 8080:8080 #torrent
+      #- 6881:6881 #torrent
+      #- 6881:6881/udp #torrent
+
+      #- 43211:43211 #seanime
+    #environment:
       # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
-#      - VPN_SERVICE_PROVIDER=
+      #- VPN_SERVICE_PROVIDER=

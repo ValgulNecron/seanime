@@ -5,6 +5,8 @@ services:
       - ./downloads:/downloads
       - ./config:/root/.config/Seanime
     # network_mode: "service:gluetun" # uncomment if using gluetun
+    ports:
+      - 43211:43211
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent

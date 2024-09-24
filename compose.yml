@@ -1,4 +1,4 @@
-service:
+services:
   seanime:
     image: valgul/seanime:latest
     volumes:

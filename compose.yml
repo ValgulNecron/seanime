@@ -1,6 +1,6 @@
 service:
   seanime:
-    image:
+    image: valgul/seanime:latest
     volumes:
       - ./downloads:/downloads
       - ./config:/root/.config/seanime

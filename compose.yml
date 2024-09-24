@@ -1,6 +1,7 @@
 services:
   seanime:
     image: valgul/seanime:latest
+    container_name: seanime
     volumes:
       - ./downloads:/downloads
       - ./config:/root/.config/Seanime
@@ -9,7 +10,7 @@ services:
     #network_mode: "service:gluetun" # uncomment if using gluetun also comment all ports section
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+    container_name: torrent
     environment:
       - TZ=Etc/UTC
       - WEBUI_PORT=8080
@@ -26,6 +27,7 @@ services:
 
   #gluetun: #so your torrent use a vpn (would be bad if it was your ip)
     #image: qmcgaw/gluetun
+    #container_name: gluetun
     #cap_add:
       #- NET_ADMIN
     #devices:

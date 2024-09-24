@@ -1,5 +1,8 @@
 FROM alpine:latest  
 
+RUN apk update && \
+    apk add --no-cache ffmpeg curl tar
+
 WORKDIR /app/
 
 RUN mkdir /downloads

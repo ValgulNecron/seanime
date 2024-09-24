@@ -3,7 +3,7 @@ services:
     image: valgul/seanime:latest
     volumes:
       - ./downloads:/downloads
-      - ./config:/root/.config/seanime
+      - ./config:/root/.config/Seanime
     # network_mode: "service:gluetun" # uncomment if using gluetun
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest

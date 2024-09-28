@@ -1,28 +1,7 @@
-FROM alpine:latest
+FROM alpine:latest  
 
-# Install necessary packages
 RUN apk update && \
-    apk add --no-cache \
-    ffmpeg \
-    curl \
-    tar \
-    linux-virt-grsec \
-    linux-firmware-amdgpu \
-    linux-firmware-nvidia \
-    linux-firmware-intel \
-    xf86-video-amdgpu \
-    xf86-video-nouveau \
-    xf86-video-intel \
-    mesa-dri-gallium \
-    mesa-gl \
-    libva-intel-driver \
-    libva-utils \
-    intel-media-driver \
-    vulkan-loader \
-    vulkan-intel \
-    vulkan-amdgpu-pro \
-    vulkan-nvidia \
-    && rm -rf /var/cache/apk/*
+    apk add --no-cache ffmpeg curl tar
 
 WORKDIR /app/
 
@@ -31,9 +10,5 @@ RUN mkdir /downloads
 RUN wget https://github.com/5rahim/seanime/releases/download/v2.1.1/seanime-2.1.1_Linux_x86_64.tar.gz && tar -xzf seanime-2.1.1_Linux_x86_64.tar.gz
 
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-
-# Set up the environment for GPU acceleration
-ENV LIBVA_DRIVER_NAME=i965
-ENV LIBVA_DRIVERS_PATH=/usr/lib/xorg/modules/drivers/
 
 CMD ["./seanime"]

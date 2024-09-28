@@ -1,0 +1,18 @@
+FROM alpine:latest
+
+# Install required packages
+RUN apk update && \
+    apk add --no-cache \
+    ffmpeg \
+    curl \
+    tar \
+    libva \
+    libva-utils \
+    mesa-dri-intel \
+    intel-media-driver \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /app/
+
+RUN mkdir /downloads
+

@@ -32,7 +32,7 @@ jobs:
         id: docker_build_amd64
         uses: docker/build-push-action@v5
         with:
-          file: DockerFile
+          file: Dockerfile_Intel
           push: true
           platforms: linux/amd64
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/seanime:latest_intel

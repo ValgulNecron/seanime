@@ -11,7 +11,7 @@ RUN apt-get update && \
     curl -fsSL https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | gpg --dearmor -o /usr/share/keyrings/jellyfin-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/jellyfin-archive-keyring.gpg] https://repo.jellyfin.org/debian bullseye main" | tee /etc/apt/sources.list.d/jellyfin.list && \
     apt-get update && \
-    apt-get install -y --no-install-recommends jellyfin-ffmpeg && \
+    apt-get install -y --no-install-recommends jellyfin-ffmpeg6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

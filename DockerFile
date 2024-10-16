@@ -1,4 +1,4 @@
-FROM debian:slim-bullseye
+FROM debian:bullseye-slim
 
 # Install necessary packages and Jellyfin's FFmpeg
 RUN apt-get update && \

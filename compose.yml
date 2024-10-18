@@ -2,12 +2,22 @@ services:
   seanime:
     image: valgul/seanime:latest
     container_name: seanime
+    depends_on:
+      - torrent
     volumes:
       - ./downloads:/downloads
       - ./config:/root/.config/Seanime
+      #- /usr/lib/x86_64-linux-gnu/dri/:/usr/lib/x86_64-linux-gnu/dri/ # uncomment for intel support
+   #devices: # uncomment for intel support
+      #- /dev/dri/card0:/dev/dri/card0 # uncomment for intel support
+      #- /dev/dri/renderD128:/dev/dri/renderD128 # uncomment for intel support
+    #group_add: # uncomment for intel support
+      #- "video" # uncomment for intel support
+      #- 105 # uncomment for intel support
     ports: 
       - 43211:43211
     #network_mode: "service:gluetun" # uncomment if using gluetun also comment all ports section
+    
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: torrent
@@ -40,8 +50,6 @@ services:
       #- 8080:8080 #torrent
       #- 6881:6881 #torrent
       #- 6881:6881/udp #torrent
-
-      #- 43211:43211 #seanime
     #environment:
       #- FIREWALL_INPUT_PORTS=8080,6881,43211
       # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup

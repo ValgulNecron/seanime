@@ -17,7 +17,13 @@ services:
     ports: 
       - 43211:43211
     #network_mode: "service:gluetun" # uncomment if using gluetun also comment all ports section
-    
+    #deploy: # nvidia and you need NVIDIA Container Toolkit
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: 1
+    #          capabilities: [gpu]
   torrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: torrent

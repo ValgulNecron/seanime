@@ -26,10 +26,12 @@ RUN mkdir /downloads
 
 # Download and install latest version
 RUN LATEST_VERSION=$(curl -s https://api.github.com/repos/5rahim/seanime/releases/latest | jq -r .tag_name) && \
+    VERSION_NO_V=$(echo ${LATEST_VERSION} | sed 's/v//') && \
     echo "Latest version: ${LATEST_VERSION}" && \
-    wget "https://github.com/5rahim/seanime/releases/download/${LATEST_VERSION}/seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
-    tar -xzf "seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
-    rm "seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
+    echo "Version without v: ${VERSION_NO_V}" && \
+    wget "https://github.com/5rahim/seanime/releases/download/${LATEST_VERSION}/seanime-${VERSION_NO_V}_Linux_x86_64.tar.gz" && \
+    tar -xzf "seanime-${VERSION_NO_V}_Linux_x86_64.tar.gz" && \
+    rm "seanime-${VERSION_NO_V}_Linux_x86_64.tar.gz" && \
     chmod +x seanime
 
 ENV PATH="/usr/lib/jellyfin-ffmpeg/:$PATH"

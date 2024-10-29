@@ -1,14 +1,19 @@
 FROM debian:bullseye-slim
 
-# Install necessary packages and Jellyfin's FFmpeg
+# Install necessary packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
         ca-certificates \
         gnupg \
         wget \
-        tar && \
-    curl -fsSL https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | gpg --dearmor -o /usr/share/keyrings/jellyfin-archive-keyring.gpg && \
+        tar \
+        jq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Jellyfin's FFmpeg
+RUN curl -fsSL https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | gpg --dearmor -o /usr/share/keyrings/jellyfin-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/jellyfin-archive-keyring.gpg] https://repo.jellyfin.org/debian bullseye main" | tee /etc/apt/sources.list.d/jellyfin.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends jellyfin-ffmpeg6 && \
@@ -19,7 +24,13 @@ WORKDIR /app/
 
 RUN mkdir /downloads
 
-RUN wget https://github.com/5rahim/seanime/releases/download/v2.1.1/seanime-2.1.1_Linux_x86_64.tar.gz && tar -xzf seanime-2.1.1_Linux_x86_64.tar.gz
+# Download and install latest version
+RUN LATEST_VERSION=$(curl -s https://api.github.com/repos/5rahim/seanime/releases/latest | jq -r .tag_name) && \
+    echo "Latest version: ${LATEST_VERSION}" && \
+    wget "https://github.com/5rahim/seanime/releases/download/${LATEST_VERSION}/seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
+    tar -xzf "seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
+    rm "seanime-${LATEST_VERSION}_Linux_x86_64.tar.gz" && \
+    chmod +x seanime
 
 ENV PATH="/usr/lib/jellyfin-ffmpeg/:$PATH"
 

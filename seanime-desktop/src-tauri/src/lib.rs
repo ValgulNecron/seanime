@@ -3,12 +3,12 @@ mod tray;
 mod constants;
 mod server;
 
+use constants::MAIN_WINDOW_LABEL;
 use std::sync::{Arc, Mutex};
 #[cfg(target_os = "macos")]
 use tauri::utils::TitleBarStyle;
 use tauri::{Listener, Manager};
 use tauri_plugin_os;
-use constants::{MAIN_WINDOW_LABEL};
 
 pub fn run() {
     let server_process = Arc::new(Mutex::new(
@@ -84,6 +84,8 @@ pub fn run() {
                             win.hide().unwrap();
                             // Prevent the window from being closed
                             api.prevent_close();
+                            #[cfg(target_os = "macos")]
+                            app.set_activation_policy(tauri::ActivationPolicy::Accessory).unwrap();
                         }
                     }
 

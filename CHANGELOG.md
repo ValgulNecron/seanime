@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.4.1
+
+- ⚡️ Desktop: Close to minimize to tray
+  - The close button no longer exits the app, but minimizes it to the system tray
+  - Exit the app by right-clicking the tray icon and selecting 'Quit Seanime'
+- ⚡️ Qbittorrent: Custom tag settings #140
+- 🦺 Fixed Linux server requiring libc
+- 🦺 Desktop: Fixed 'toggle visibility'
+
+## v2.4.0
+
+- 🚀 Desktop app
+  - You can now download the new desktop app for Windows, macOS, and Linux
+  - The desktop app is a standalone GUI that embeds its own server
+- 🦺 Anime library: Fixed toggle lock button
+- 🦺 Torrent streaming: Fixed file previews
+- 🏗️ Rename 'enhanced scanning'
+- 🔨 Updated release workflow
+
 ## v2.3.0
 
 - ✨ Real-Debrid support for streaming and downloading

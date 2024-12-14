@@ -13,9 +13,10 @@ import { ConfirmationDialog, useConfirmationDialog } from "@/components/shared/c
 import { AppSidebar, useAppSidebarContext } from "@/components/ui/app-layout"
 import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, IconButton } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { HoverCard } from "@/components/ui/hover-card"
 import { Modal } from "@/components/ui/modal"
 import { VerticalMenu } from "@/components/ui/vertical-menu"
 import { useDisclosure } from "@/hooks/use-disclosure"
@@ -24,14 +25,14 @@ import { TORRENT_CLIENT, TORRENT_PROVIDER } from "@/lib/server/settings"
 import { WSEvents } from "@/lib/server/ws-events"
 import { useThemeSettings } from "@/lib/theme/hooks"
 import { useSetAtom } from "jotai"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import React from "react"
 import { BiCalendarAlt, BiDownload, BiExtension, BiLogOut, BiNews } from "react-icons/bi"
 import { FaBookReader } from "react-icons/fa"
 import { FiLogIn, FiSearch, FiSettings } from "react-icons/fi"
 import { HiOutlineServerStack } from "react-icons/hi2"
 import { IoCloudOfflineOutline, IoLibrary } from "react-icons/io5"
-import { PiClockCounterClockwiseFill } from "react-icons/pi"
+import { PiArrowCircleLeftDuotone, PiArrowCircleRightDuotone, PiClockCounterClockwiseFill } from "react-icons/pi"
 import { SiAnilist } from "react-icons/si"
 import { TbWorldDownload } from "react-icons/tb"
 
@@ -51,6 +52,7 @@ export function MainSidebar() {
     // const isCollapsed = !ctx.isBelowBreakpoint && !expandedSidebar
     const isCollapsed = ts.expandSidebarOnHover ? (!ctx.isBelowBreakpoint && !expandedSidebar) : !ctx.isBelowBreakpoint
 
+    const router = useRouter()
     const pathname = usePathname()
     const serverStatus = useServerStatus()
     const setServerStatus = useSetServerStatus()
@@ -130,6 +132,13 @@ export function MainSidebar() {
                         itemClass="relative"
 
                         items={[
+                            // ...[process.env.NEXT_PUBLIC_PLATFORM === "desktop" && {
+                            //     iconType: AiOutlineArrowLeft,
+                            //     name: "Back",
+                            //     onClick: () => {
+                            //         router.back()
+                            //     },
+                            // }],
                             {
                                 iconType: IoLibrary,
                                 name: "Library",
@@ -221,6 +230,30 @@ export function MainSidebar() {
                         handleExpandSidebar={() => {}}
                         handleUnexpandedSidebar={() => {}}
                     />
+                    {process.env.NEXT_PUBLIC_PLATFORM === "desktop" && <div className="w-full flex justify-center px-4">
+                        <HoverCard
+                            side="right"
+                            sideOffset={-8}
+                            className="bg-transparent border-none"
+                            trigger={<IconButton
+                                intent="gray-basic"
+                                className="!text-[--muted] hover:!text-[--foreground]"
+                                icon={<PiArrowCircleLeftDuotone />}
+                                onClick={() => {
+                                    router.back()
+                                }}
+                            />}
+                        >
+                            <IconButton
+                                icon={<PiArrowCircleRightDuotone />}
+                                intent="gray-subtle"
+                                className="opacity-50 hover:opacity-100"
+                                onClick={() => {
+                                    router.forward()
+                                }}
+                            />
+                        </HoverCard>
+                    </div>}
 
                 </div>
                 <div className="flex w-full gap-2 flex-col px-4">

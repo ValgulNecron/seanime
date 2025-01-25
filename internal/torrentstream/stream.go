@@ -92,10 +92,13 @@ func (r *Repository) StartStream(opts *StartStreamOptions) (err error) {
 
 	r.sendTorrentLoadingStatus(TLSStateStartingServer, "")
 
-	//
-	// Start the server
-	//
-	r.serverManager.startServer()
+	settings, ok := r.settings.Get()
+	if ok && settings.UseSeparateServer {
+		//
+		// Start the server
+		//
+		r.serverManager.startServer()
+	}
 
 	r.sendTorrentLoadingStatus(TLSStateSendingStreamToMediaPlayer, "")
 
@@ -182,10 +185,13 @@ func (r *Repository) StopStream() error {
 		}
 		r.client.repository.logger.Debug().Msg("torrentstream: Resetting current torrent and status")
 	}
-	r.client.currentTorrent = mo.None[*torrent.Torrent]()                  // Reset the current torrent
-	r.client.currentFile = mo.None[*torrent.File]()                        // Reset the current file
-	r.client.currentTorrentStatus = TorrentStatus{}                        // Reset the torrent status
-	r.client.repository.serverManager.stopServer()                         // Stop streaming server
+	r.client.currentTorrent = mo.None[*torrent.Torrent]() // Reset the current torrent
+	r.client.currentFile = mo.None[*torrent.File]()       // Reset the current file
+	r.client.currentTorrentStatus = TorrentStatus{}       // Reset the torrent status
+	settings, ok := r.client.repository.settings.Get()
+	if ok && settings.UseSeparateServer {
+		r.client.repository.serverManager.stopServer() // Stop the server
+	}
 	r.client.repository.wsEventManager.SendEvent(eventTorrentStopped, nil) // Send torrent stopped event
 	r.client.repository.mediaPlayerRepository.Stop()                       // Stop the media player gracefully if it's running
 	r.client.mu.Unlock()
@@ -224,7 +230,10 @@ func (r *Repository) DropTorrent() error {
 	}
 
 	// Also stop the server, since it's dropped
-	r.serverManager.stopServer()
+	settings, ok := r.settings.Get()
+	if ok && settings.UseSeparateServer {
+		r.serverManager.stopServer()
+	}
 	r.mediaPlayerRepository.Stop()
 
 	r.logger.Info().Msg("torrentstream: Dropped last torrent")

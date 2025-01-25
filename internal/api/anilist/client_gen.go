@@ -27,7 +27,7 @@ type GithubGraphQLClient interface {
 	SearchBaseManga(ctx context.Context, page *int, perPage *int, sort []*MediaSort, search *string, status []*MediaStatus, interceptors ...clientv2.RequestInterceptor) (*SearchBaseManga, error)
 	BaseMangaByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*BaseMangaByID, error)
 	MangaDetailsByID(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*MangaDetailsByID, error)
-	ListManga(ctx context.Context, page *int, search *string, perPage *int, sort []*MediaSort, status []*MediaStatus, genres []*string, averageScoreGreater *int, startDateGreater *string, startDateLesser *string, format *MediaFormat, isAdult *bool, interceptors ...clientv2.RequestInterceptor) (*ListManga, error)
+	ListManga(ctx context.Context, page *int, search *string, perPage *int, sort []*MediaSort, status []*MediaStatus, genres []*string, averageScoreGreater *int, startDateGreater *string, startDateLesser *string, format *MediaFormat, countryOfOrigin *string, isAdult *bool, interceptors ...clientv2.RequestInterceptor) (*ListManga, error)
 	ViewerStats(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*ViewerStats, error)
 	StudioDetails(ctx context.Context, id *int, interceptors ...clientv2.RequestInterceptor) (*StudioDetails, error)
 	GetViewer(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetViewer, error)
@@ -49,6 +49,7 @@ type BaseAnime struct {
 	Season            *MediaSeason                 "json:\"season,omitempty\" graphql:\"season\""
 	Type              *MediaType                   "json:\"type,omitempty\" graphql:\"type\""
 	Format            *MediaFormat                 "json:\"format,omitempty\" graphql:\"format\""
+	SeasonYear        *int                         "json:\"seasonYear,omitempty\" graphql:\"seasonYear\""
 	BannerImage       *string                      "json:\"bannerImage,omitempty\" graphql:\"bannerImage\""
 	Episodes          *int                         "json:\"episodes,omitempty\" graphql:\"episodes\""
 	Synonyms          []*string                    "json:\"synonyms,omitempty\" graphql:\"synonyms\""
@@ -107,6 +108,12 @@ func (t *BaseAnime) GetFormat() *MediaFormat {
 		t = &BaseAnime{}
 	}
 	return t.Format
+}
+func (t *BaseAnime) GetSeasonYear() *int {
+	if t == nil {
+		t = &BaseAnime{}
+	}
+	return t.SeasonYear
 }
 func (t *BaseAnime) GetBannerImage() *string {
 	if t == nil {
@@ -205,6 +212,7 @@ type CompleteAnime struct {
 	SiteURL           *string                          "json:\"siteUrl,omitempty\" graphql:\"siteUrl\""
 	Status            *MediaStatus                     "json:\"status,omitempty\" graphql:\"status\""
 	Season            *MediaSeason                     "json:\"season,omitempty\" graphql:\"season\""
+	SeasonYear        *int                             "json:\"seasonYear,omitempty\" graphql:\"seasonYear\""
 	Type              *MediaType                       "json:\"type,omitempty\" graphql:\"type\""
 	Format            *MediaFormat                     "json:\"format,omitempty\" graphql:\"format\""
 	BannerImage       *string                          "json:\"bannerImage,omitempty\" graphql:\"bannerImage\""
@@ -254,6 +262,12 @@ func (t *CompleteAnime) GetSeason() *MediaSeason {
 		t = &CompleteAnime{}
 	}
 	return t.Season
+}
+func (t *CompleteAnime) GetSeasonYear() *int {
+	if t == nil {
+		t = &CompleteAnime{}
+	}
+	return t.SeasonYear
 }
 func (t *CompleteAnime) GetType() *MediaType {
 	if t == nil {
@@ -6920,6 +6934,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7018,6 +7033,7 @@ fragment completeAnime on Media {
 	siteUrl
 	status(version: 2)
 	season
+	seasonYear
 	type
 	format
 	bannerImage
@@ -7078,6 +7094,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7152,6 +7169,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7226,6 +7244,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7305,6 +7324,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7386,6 +7406,7 @@ fragment completeAnime on Media {
 	siteUrl
 	status(version: 2)
 	season
+	seasonYear
 	type
 	format
 	bannerImage
@@ -7446,6 +7467,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7649,6 +7671,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7732,6 +7755,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -7831,6 +7855,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms
@@ -8387,7 +8412,7 @@ func (c *Client) MangaDetailsByID(ctx context.Context, id *int, interceptors ...
 	return &res, nil
 }
 
-const ListMangaDocument = `query ListManga ($page: Int, $search: String, $perPage: Int, $sort: [MediaSort], $status: [MediaStatus], $genres: [String], $averageScore_greater: Int, $startDate_greater: FuzzyDateInt, $startDate_lesser: FuzzyDateInt, $format: MediaFormat, $isAdult: Boolean) {
+const ListMangaDocument = `query ListManga ($page: Int, $search: String, $perPage: Int, $sort: [MediaSort], $status: [MediaStatus], $genres: [String], $averageScore_greater: Int, $startDate_greater: FuzzyDateInt, $startDate_lesser: FuzzyDateInt, $format: MediaFormat, $countryOfOrigin: CountryCode, $isAdult: Boolean) {
 	Page(page: $page, perPage: $perPage) {
 		pageInfo {
 			hasNextPage
@@ -8396,7 +8421,7 @@ const ListMangaDocument = `query ListManga ($page: Int, $search: String, $perPag
 			currentPage
 			lastPage
 		}
-		media(type: MANGA, isAdult: $isAdult, search: $search, sort: $sort, status_in: $status, format: $format, genre_in: $genres, averageScore_greater: $averageScore_greater, startDate_greater: $startDate_greater, startDate_lesser: $startDate_lesser, format_not: NOVEL) {
+		media(type: MANGA, isAdult: $isAdult, countryOfOrigin: $countryOfOrigin, search: $search, sort: $sort, status_in: $status, format: $format, genre_in: $genres, averageScore_greater: $averageScore_greater, startDate_greater: $startDate_greater, startDate_lesser: $startDate_lesser, format_not: NOVEL) {
 			... baseManga
 		}
 	}
@@ -8443,7 +8468,7 @@ fragment baseManga on Media {
 }
 `
 
-func (c *Client) ListManga(ctx context.Context, page *int, search *string, perPage *int, sort []*MediaSort, status []*MediaStatus, genres []*string, averageScoreGreater *int, startDateGreater *string, startDateLesser *string, format *MediaFormat, isAdult *bool, interceptors ...clientv2.RequestInterceptor) (*ListManga, error) {
+func (c *Client) ListManga(ctx context.Context, page *int, search *string, perPage *int, sort []*MediaSort, status []*MediaStatus, genres []*string, averageScoreGreater *int, startDateGreater *string, startDateLesser *string, format *MediaFormat, countryOfOrigin *string, isAdult *bool, interceptors ...clientv2.RequestInterceptor) (*ListManga, error) {
 	vars := map[string]any{
 		"page":                 page,
 		"search":               search,
@@ -8455,6 +8480,7 @@ func (c *Client) ListManga(ctx context.Context, page *int, search *string, perPa
 		"startDate_greater":    startDateGreater,
 		"startDate_lesser":     startDateLesser,
 		"format":               format,
+		"countryOfOrigin":      countryOfOrigin,
 		"isAdult":              isAdult,
 	}
 
@@ -8626,6 +8652,7 @@ fragment baseAnime on Media {
 	season
 	type
 	format
+	seasonYear
 	bannerImage
 	episodes
 	synonyms

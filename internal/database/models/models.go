@@ -78,6 +78,9 @@ type LibrarySettings struct {
 	EnableWatchContinuity    bool         `gorm:"column:enable_watch_continuity" json:"enableWatchContinuity"`
 	LibraryPaths             LibraryPaths `gorm:"column:library_paths;type:text" json:"libraryPaths"`
 	AutoSyncOfflineLocalData bool         `gorm:"column:auto_sync_offline_local_data" json:"autoSyncOfflineLocalData"`
+	// v2.6+
+	ScannerMatchingThreshold float64 `gorm:"column:scanner_matching_threshold" json:"scannerMatchingThreshold"`
+	ScannerMatchingAlgorithm string  `gorm:"column:scanner_matching_algorithm" json:"scannerMatchingAlgorithm"`
 }
 
 func (o *LibrarySettings) GetLibraryPaths() (ret []string) {
@@ -255,6 +258,11 @@ type Theme struct {
 	DisableSidebarTransparency        bool   `gorm:"column:disable_sidebar_transparency" json:"disableSidebarTransparency"`
 	UseLegacyEpisodeCard              bool   `gorm:"column:use_legacy_episode_card" json:"useLegacyEpisodeCard"`
 	DisableCarouselAutoScroll         bool   `gorm:"column:disable_carousel_auto_scroll" json:"disableCarouselAutoScroll"`
+
+	// v2.6+
+	MediaPageBannerType        string `gorm:"column:media_page_banner_type" json:"mediaPageBannerType"`
+	MediaPageBannerSize        string `gorm:"column:media_page_banner_size" json:"mediaPageBannerSize"`
+	MediaPageBannerInfoBoxSize string `gorm:"column:media_page_banner_info_box_size" json:"mediaPageBannerInfoBoxSize"`
 }
 
 // +---------------------+
@@ -320,8 +328,10 @@ type TorrentstreamSettings struct {
 	TorrentClientPort   int    `gorm:"column:torrent_client_port" json:"torrentClientPort"`
 	StreamingServerHost string `gorm:"column:streaming_server_host" json:"streamingServerHost"`
 	StreamingServerPort int    `gorm:"column:streaming_server_port" json:"streamingServerPort"`
-	//FallbackToTorrentStreamingView bool   `gorm:"column:fallback_to_torrent_streaming_view" json:"fallbackToTorrentStreamingView"`
+	//FallbackToTorrentStreamingView bool   `gorm:"column:fallback_to_torrent_streaming_view" json:"fallbackToTorrentStreamingView"` // DEPRECATED
 	IncludeInLibrary bool `gorm:"column:include_in_library" json:"includeInLibrary"`
+	// v2.6+
+	StreamUrlAddress string `gorm:"column:stream_url_address" json:"streamUrlAddress"`
 }
 
 type TorrentstreamHistory struct {
@@ -382,7 +392,7 @@ type DebridSettings struct {
 	Enabled  bool   `gorm:"column:enabled" json:"enabled"`
 	Provider string `gorm:"column:provider" json:"provider"`
 	ApiKey   string `gorm:"column:api_key" json:"apiKey"`
-	//FallbackToDebridStreamingView bool   `gorm:"column:fallback_to_debrid_streaming_view" json:"fallbackToDebridStreamingView"`
+	//FallbackToDebridStreamingView bool   `gorm:"column:fallback_to_debrid_streaming_view" json:"fallbackToDebridStreamingView"` // DEPRECATED
 	IncludeDebridStreamInLibrary bool   `gorm:"column:include_debrid_stream_in_library" json:"includeDebridStreamInLibrary"`
 	StreamAutoSelect             bool   `gorm:"column:stream_auto_select" json:"streamAutoSelect"`
 	StreamPreferredResolution    string `gorm:"column:stream_preferred_resolution" json:"streamPreferredResolution"`

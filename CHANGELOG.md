@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.6.2
+
+- ⚡️ Advanced search: Maintain search params during navigation #195
+- 🦺 Torrent streaming: Fixed playback issue
+- 🦺 Auto Downloader: Fixed list not updating correctly after batch creation
+- 🔧 Torrent streaming: Reverted to using separate streaming server
+
+## v2.6.1
+
+- ⚡️ Anime library: Filtering by year now takes into account the season year
+- ⚡️ Torrent streaming: Custom stream URL address setting #182
+- 🦺 Scanner: Fixed duplicated files due to incorrect path comparison
+- 🦺 Use AniList season year instead of start year for media cards #193
+- 🏗️ Issue recorder: Increase data cap limit
+
+## v2.6.0
+
+- ✨ In-app issue log recorder
+  - Record browser, network and server logs from an issue you encounter in the app and generate an anonymized file to send for bug reports
+- ⚡️ Auto Downloader: Added support for batch creation of rules #180
+- ⚡️ Scanner: Improved default matching algorithm
+- ⚡️ Scanner: Option to choose different matching algorithms
+- ⚡️ Scanner: Improved filename parser, support for SxPx format
+- ⚡️ Scanner: Reduced log file sizes and forced logging to single file per scan
+- ⚡️ Improved Discover manga page
+- ⚡️ New manga filters for country and format #191
+- ⚡️ Torrent streaming: Serve streams from main server (Experimental)
+  - Lower memory usage, removes need for separate server
+- ⚡️ Auto deletion of log files older than 14 days #184
+- ⚡️ Online streaming: Added 'f' keybinding to restore fullscreen #186
+- 💄 Media page banner image customization #185
+- 💄 Media banner layout customization
+- 💄 Updated user interface settings page
+- 💄 Updated some styles
+- 💄 Added 'Fix border rendering artifacts' option to UI settings
+- 🦺 Fixed Auto Downloader form #187
+- 🦺 Streaming: Fixed auto-select for media with very long titles
+- 🦺 Fixed torrent streaming on VLC
+- 🦺 Fixed MPV resumed playback with watch continuity enabled
+- 🦺 Desktop: Fixed sidebar menu item selection
+- 🏗️ Auto Downloader: Set minimum refresh interval to 15 minutes (BREAKING)
+  - If your refresh interval less than 15 minutes, it will be force set to 20 minutes. Update the settings accordingly.
+- 🏗️ Moved 'watch continuity' setting to 'Seanime' tab
+
 ## v2.5.2
 
 - 🦺 Fixed SeaDex extension #179

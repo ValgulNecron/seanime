@@ -3,6 +3,7 @@ package torrentstream
 import (
 	"errors"
 	hibiketorrent "github.com/5rahim/hibike/pkg/extension/torrent"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/samber/mo"
 	"os"
@@ -46,6 +47,9 @@ type (
 
 	Settings struct {
 		models.TorrentstreamSettings
+		Host              string
+		Port              int
+		UseSeparateServer bool
 	}
 
 	NewRepositoryOptions struct {
@@ -114,8 +118,9 @@ func (r *Repository) SetMediaPlayerRepository(mediaPlayerRepository *mediaplayer
 
 // InitModules sets the settings for the torrentstream module.
 // It should be called before any other method, to ensure the module is active.
-func (r *Repository) InitModules(settings *models.TorrentstreamSettings, host string) (err error) {
+func (r *Repository) InitModules(settings *models.TorrentstreamSettings, host string, port int, isMainServer bool) (err error) {
 	r.client.Shutdown()
+	useSeparateServer := !isMainServer
 
 	defer util.HandlePanicInModuleWithError("torrentstream/InitModules", &err)
 
@@ -157,6 +162,9 @@ func (r *Repository) InitModules(settings *models.TorrentstreamSettings, host st
 	// Set the settings
 	r.settings = mo.Some(Settings{
 		TorrentstreamSettings: s,
+		Host:                  host,
+		Port:                  port,
+		UseSeparateServer:     useSeparateServer,
 	})
 
 	// Initialize the torrent client
@@ -165,11 +173,17 @@ func (r *Repository) InitModules(settings *models.TorrentstreamSettings, host st
 		return err
 	}
 
-	// Initialize the streaming server
-	r.serverManager.initializeServer()
+	if useSeparateServer {
+		// Initialize the streaming server
+		r.serverManager.initializeServer()
+	}
 
 	r.logger.Info().Msg("torrentstream: Module initialized")
 	return nil
+}
+
+func (r *Repository) ServeStream(c *fiber.Ctx) error {
+	return r.serverManager.serve(c)
 }
 
 func (r *Repository) FailIfNoSettings() error {
@@ -182,12 +196,15 @@ func (r *Repository) FailIfNoSettings() error {
 // Shutdown closes the torrent client and streaming server
 // TEST-ONLY
 func (r *Repository) Shutdown() {
-	if r.settings.IsAbsent() {
+	settings, ok := r.settings.Get()
+	if !ok {
 		return
 	}
 	r.logger.Debug().Msg("torrentstream: Shutting down module")
 	r.client.Shutdown()
-	r.serverManager.stopServer()
+	if settings.UseSeparateServer {
+		r.serverManager.stopServer()
+	}
 }
 
 //// Cleanup shuts down the module and removes the download directory

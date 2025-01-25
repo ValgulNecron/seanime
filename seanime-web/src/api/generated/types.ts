@@ -398,6 +398,7 @@ export type AL_BaseAnime = {
     season?: AL_MediaSeason
     type?: AL_MediaType
     format?: AL_MediaFormat
+    seasonYear?: number
     bannerImage?: string
     episodes?: number
     synonyms?: Array<string>
@@ -2663,6 +2664,8 @@ export type Models_LibrarySettings = {
     enableWatchContinuity: boolean
     libraryPaths: Models_LibraryPaths
     autoSyncOfflineLocalData: boolean
+    scannerMatchingThreshold: number
+    scannerMatchingAlgorithm: string
 }
 
 /**
@@ -2817,6 +2820,9 @@ export type Models_Theme = {
     disableSidebarTransparency: boolean
     useLegacyEpisodeCard: boolean
     disableCarouselAutoScroll: boolean
+    mediaPageBannerType: string
+    mediaPageBannerSize: string
+    mediaPageBannerInfoBoxSize: string
     id: number
     createdAt?: string
     updatedAt?: string
@@ -2858,9 +2864,16 @@ export type Models_TorrentstreamSettings = {
     addToLibrary: boolean
     torrentClientHost: string
     torrentClientPort: number
+    /**
+     * UNUSED, LEGACY
+     */
     streamingServerHost: string
+    /**
+     * UNUSED, LEGACY
+     */
     streamingServerPort: number
     includeInLibrary: boolean
+    streamUrlAddress: string
     id: number
     createdAt?: string
     updatedAt?: string
@@ -2933,6 +2946,99 @@ export type Onlinestream_VideoSource = {
     headers?: Record<string, string>
     url: string
     quality: string
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Report
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_ClickLog = {
+    timestamp?: string
+    element: string
+    pageUrl: string
+    text?: string
+    className?: string
+}
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_ConsoleLog = {
+    type: string
+    content: string
+    pageUrl: string
+    timestamp?: string
+}
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_IssueReport = {
+    createdAt?: string
+    userAgent: string
+    appVersion: string
+    os: string
+    arch: string
+    clickLogs?: Array<Report_ClickLog>
+    networkLogs?: Array<Report_NetworkLog>
+    reactQueryLogs?: Array<Report_ReactQueryLog>
+    consoleLogs?: Array<Report_ConsoleLog>
+    unlockedLocalFiles?: Array<Report_UnlockedLocalFile>
+    scanLogs?: Array<string>
+    serverLogs?: string
+    status?: string
+}
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_NetworkLog = {
+    type: string
+    method: string
+    url: string
+    pageUrl: string
+    status: number
+    duration: number
+    dataPreview: string
+    body: string
+    timestamp?: string
+}
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_ReactQueryLog = {
+    type: string
+    pageUrl: string
+    status: string
+    hash: string
+    error: any
+    dataPreview: string
+    dataType: string
+    timestamp?: string
+}
+
+/**
+ * - Filepath: internal/report/report.go
+ * - Filename: report.go
+ * - Package: report
+ */
+export type Report_UnlockedLocalFile = {
+    path: string
+    mediaId: number
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

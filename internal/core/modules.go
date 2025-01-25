@@ -238,7 +238,7 @@ func (a *App) InitOrRefreshModules() {
 	// Refresh auto scanner settings
 	if settings.Library != nil && a.AutoScanner != nil {
 
-		a.AutoScanner.SetEnabled(settings.Library.AutoScan)
+		a.AutoScanner.SetSettings(*settings.Library)
 
 		// Torrent Repository
 		a.TorrentRepository.SetSettings(&torrent.RepositorySettings{
@@ -453,6 +453,7 @@ func (a *App) InitOrRefreshTorrentstreamSettings() {
 			StreamingServerHost: "0.0.0.0",
 			StreamingServerPort: 43214,
 			IncludeInLibrary:    false,
+			StreamUrlAddress:    "",
 		})
 		if err != nil {
 			a.Logger.Error().Err(err).Msg("app: Failed to initialize mediastream module")
@@ -460,7 +461,7 @@ func (a *App) InitOrRefreshTorrentstreamSettings() {
 		}
 	}
 
-	err := a.TorrentstreamRepository.InitModules(settings, a.Config.Server.Host)
+	err := a.TorrentstreamRepository.InitModules(settings, a.Config.Server.Host, a.Config.Server.Port, a.FeatureFlags.IsMainServerTorrentStreamingEnabled())
 	if err != nil && settings.Enabled {
 		a.Logger.Error().Err(err).Msg("app: Failed to initialize Torrent streaming module")
 		//_, _ = a.Database.UpsertTorrentstreamSettings(&models.TorrentstreamSettings{
@@ -531,7 +532,7 @@ func (a *App) InitOrRefreshAnilistData() {
 
 	// Set account
 	a.account = acc
-	a.Logger.Info().Msg("app: Authenticated to AniList as " + acc.Username)
+	a.Logger.Info().Msg("app: Authenticated to AniList")
 
 	_, err = a.RefreshAnimeCollection()
 	if err != nil {

@@ -29,19 +29,22 @@ export default function Page() {
     const setParams = useSetAtom(__advancedSearch_paramsAtom)
 
     useMount(() => {
-        setParams({
-            active: true,
-            title: null,
-            sorting: sortingUrlParam ? [sortingUrlParam as AL_MediaSort] : null,
-            status: statusUrlParam ? [statusUrlParam as AL_MediaStatus] : null,
-            genre: genreUrlParam ? [genreUrlParam] : null,
-            format: (formatUrlParam as AL_MediaFormat) === "MANGA" ? null : (formatUrlParam as AL_MediaFormat),
-            season: (seasonUrlParam as AL_MediaSeason) || null,
-            year: yearUrlParam || null,
-            minScore: null,
-            isAdult: false,
-            type: (formatUrlParam as AL_MediaFormat) === "MANGA" ? "manga" : (typeUrlParam as "anime" | "manga") || "anime",
-        })
+        if (sortingUrlParam || genreUrlParam || statusUrlParam || formatUrlParam || seasonUrlParam || yearUrlParam || typeUrlParam) {
+            setParams({
+                active: true,
+                title: null,
+                sorting: sortingUrlParam ? [sortingUrlParam as AL_MediaSort] : null,
+                status: statusUrlParam ? [statusUrlParam as AL_MediaStatus] : null,
+                genre: genreUrlParam ? [genreUrlParam] : null,
+                format: (formatUrlParam as AL_MediaFormat) === "MANGA" ? null : (formatUrlParam as AL_MediaFormat),
+                season: (seasonUrlParam as AL_MediaSeason) || null,
+                year: yearUrlParam || null,
+                minScore: null,
+                isAdult: false,
+                countryOfOrigin: null,
+                type: (formatUrlParam as AL_MediaFormat) === "MANGA" ? "manga" : (typeUrlParam as "anime" | "manga") || "anime",
+            })
+        }
     })
 
     return (
@@ -50,7 +53,7 @@ export default function Page() {
             <PageWrapper className="space-y-6 px-4 md:p-8 pt-0 pb-10">
                 <div className="flex items-center gap-4">
                     <SeaLink href={`/discover`}>
-                        <Button leftIcon={<AiOutlineArrowLeft />} rounded intent="white-outline" size="md">
+                        <Button leftIcon={<AiOutlineArrowLeft />} rounded intent="gray-outline" size="md">
                             Discover
                         </Button>
                     </SeaLink>

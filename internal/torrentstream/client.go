@@ -233,16 +233,41 @@ func (c *Client) GetStreamingUrl() string {
 	if c.torrentClient.IsAbsent() {
 		return ""
 	}
-
 	if c.currentFile.IsAbsent() {
 		return ""
 	}
-
-	settings := c.repository.settings.MustGet()
-	if settings.StreamingServerHost == "0.0.0.0" {
-		return fmt.Sprintf("http://127.0.0.1:%d/stream/%s", settings.StreamingServerPort, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+	settings, ok := c.repository.settings.Get()
+	if !ok {
+		return ""
 	}
-	return fmt.Sprintf("http://%s:%d/stream/%s", settings.StreamingServerHost, settings.StreamingServerPort, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+
+	if !settings.UseSeparateServer {
+		address := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+		if settings.StreamUrlAddress != "" {
+			address = settings.StreamUrlAddress
+		}
+		_url := fmt.Sprintf("http://%s/api/v1/torrentstream/stream/%s", address, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+		if strings.HasPrefix(_url, "http://http") {
+			_url = strings.Replace(_url, "http://http", "http", 1)
+		}
+		return _url
+	}
+
+	//if settings.StreamingServerHost == "0.0.0.0" {
+	//	return fmt.Sprintf("http://127.0.0.1:%d/stream/%s", settings.StreamingServerPort, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+	//}
+	host := settings.StreamingServerHost
+	if host == "" || host == "0.0.0.0" {
+		host = "127.0.0.1"
+	}
+	_url := fmt.Sprintf("http://%s:%d/stream/%s", host, settings.StreamingServerPort, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+	if settings.StreamUrlAddress != "" {
+		_url = fmt.Sprintf("http://%s/stream/%s", settings.StreamUrlAddress, url.PathEscape(c.currentFile.MustGet().DisplayPath()))
+		if strings.HasPrefix(_url, "http://http") {
+			_url = strings.Replace(_url, "http://http", "http", 1)
+		}
+	}
+	return _url
 }
 
 func (c *Client) AddTorrent(id string) (*torrent.Torrent, error) {

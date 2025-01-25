@@ -19,6 +19,7 @@ const torrentstreamSchema = defineSchema(({ z }) => z.object({
     torrentClientPort: z.number(),
     preferredResolution: z.string(),
     includeInLibrary: z.boolean(),
+    streamUrlAddress: z.string().optional().default(""),
 }))
 
 
@@ -63,11 +64,12 @@ export function TorrentstreamSettings(props: TorrentstreamSettingsProps) {
                     disableIPv6: settings.disableIPV6,
                     addToLibrary: settings.addToLibrary,
                     streamingServerPort: settings.streamingServerPort,
-                    streamingServerHost: settings.streamingServerHost,
+                    streamingServerHost: settings.streamingServerHost || "",
                     torrentClientHost: settings.torrentClientHost || "",
                     torrentClientPort: settings.torrentClientPort,
                     preferredResolution: settings.preferredResolution || "-",
                     includeInLibrary: settings.includeInLibrary,
+                    streamUrlAddress: settings.streamUrlAddress || "",
                 }}
                 stackClass="space-y-6"
             >
@@ -128,11 +130,13 @@ export function TorrentstreamSettings(props: TorrentstreamSettingsProps) {
 
                 <Separator />
 
-                <h3>Torrent client</h3>
+                <div>
+                    <h3>Torrent client</h3>
 
-                <p>
-                    Seanime uses a built-in torrent client to download torrents.
-                </p>
+                    <p>
+                        Seanime uses a built-in torrent client to download torrents.
+                    </p>
+                </div>
 
                 <div className="flex items-center gap-3">
 
@@ -148,7 +152,7 @@ export function TorrentstreamSettings(props: TorrentstreamSettingsProps) {
                         formatOptions={{
                             useGrouping: false,
                         }}
-                        help="Default is 43213"
+                        help="Leave empty for default. Default is 43213."
                     />
 
                 </div>
@@ -185,6 +189,15 @@ export function TorrentstreamSettings(props: TorrentstreamSettingsProps) {
                     />
 
                 </div>
+
+                <Separator />
+
+                <Field.Text
+                    name="streamUrlAddress"
+                    label="Stream URL address"
+                    placeholder="e.g. {host}:{port}"
+                    help="Leave empty for default. The URL to use for streaming."
+                />
 
 
                 <div className="flex w-full items-center">

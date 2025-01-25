@@ -19,7 +19,7 @@ import { TextInput } from "@/components/ui/text-input"
 import { uniq } from "lodash"
 import Image from "next/image"
 import React from "react"
-import { useFieldArray, UseFormReturn } from "react-hook-form"
+import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form"
 import { BiPlus } from "react-icons/bi"
 import { FcFolder } from "react-icons/fc"
 import { LuTextCursorInput } from "react-icons/lu"
@@ -178,10 +178,13 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
 
     const serverStatus = useServerStatus()
 
-    const selectedMedia = allMedia.find(media => media.id === Number(form.watch("mediaId")))
+    const form_mediaId = useWatch({ name: "mediaId" }) as number
+    const form_episodeType = useWatch({ name: "episodeType" }) as Anime_AutoDownloaderRuleEpisodeType
+
+    const selectedMedia = allMedia.find(media => media.id === Number(form_mediaId))
 
     React.useEffect(() => {
-        const id = Number(form.watch("mediaId"))
+        const id = Number(form_mediaId)
         const destination = libraryCollection?.lists?.flatMap(list => list.entries)?.find(entry => entry?.media?.id === id)?.libraryData?.sharedPath
         if (!isNaN(id) && !rule?.comparisonTitle) {
             const media = allMedia.find(media => media.id === id)
@@ -200,7 +203,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                 form.setValue("destination", newDestination)
             }
         }
-    }, [form.watch("mediaId"), selectedMedia, libraryCollection, rule])
+    }, [form_mediaId, selectedMedia, libraryCollection, rule])
 
     if (!selectedMedia) {
         return <div className="p-4 text-[--muted] text-center">Media is not in your library</div>
@@ -216,7 +219,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
             <div
                 className={cn(
                     "space-y-3",
-                    !form.watch("enabled") && "opacity-50 pointer-events-none",
+                    // !form.watch("enabled") && "opacity-50 pointer-events-none",
                 )}
             >
                 {!mediaId && <div className="flex gap-4 items-end">
@@ -238,7 +241,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                         label="Library Entry"
                         options={notFinishedMedia.map(media => ({ label: media.title?.userPreferred || "N/A", value: String(media.id) }))
                             .toSorted((a, b) => a.label.localeCompare(b.label))}
-                        value={String(form.watch("mediaId"))}
+                        value={String(form_mediaId)}
                         onValueChange={(v) => form.setValue("mediaId", parseInt(v))}
                         help={!mediaId ? "The anime must be airing or upcoming" : undefined}
                         disabled={type === "edit" || !!mediaId}
@@ -313,7 +316,7 @@ export function RuleFormFields(props: RuleFormFieldsProps) {
                         ]}
                     />
 
-                    {form.watch("episodeType") === "selected" && <TextArrayField
+                    {form_episodeType === "selected" && <TextArrayField
                         label="Episode numbers"
                         name="episodeNumbers"
                         control={form.control}

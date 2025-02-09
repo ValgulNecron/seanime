@@ -54,6 +54,7 @@ export function useServerMutation<R = void, V = void>(
     }: ServerMutationProps<R, V>) {
     return useMutation<R | undefined, SeaError, V>({
         onError: error => {
+            console.log("Mutation error", error)
             toast.error(_handleSeaError(error.response?.data))
         },
         mutationFn: async (variables) => {

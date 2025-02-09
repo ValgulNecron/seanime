@@ -1,10 +1,10 @@
-import { AL_AnimeDetailsById_Media, Anime_Entry } from "@/api/generated/types"
+import { Anime_Entry } from "@/api/generated/types"
 import { useHandlePlayMedia } from "@/app/(main)/entry/_lib/handle-play-media"
 import { usePlayNextVideoOnMount } from "@/app/(main)/entry/_lib/handle-play-on-mount"
 import React from "react"
 
-export function useHandleEpisodeSection(props: { entry: Anime_Entry, details: AL_AnimeDetailsById_Media | undefined }) {
-    const { entry, details } = props
+export function useHandleEpisodeSection(props: { entry: Anime_Entry }) {
+    const { entry } = props
     const media = entry.media
 
     const { playMediaFile } = useHandlePlayMedia()
@@ -22,13 +22,14 @@ export function useHandleEpisodeSection(props: { entry: Anime_Entry, details: AL
     }, [entry.episodes])
 
     const specialEpisodes = React.useMemo(() => {
-        return (entry.episodes?.filter(ep => ep.type === "special") ?? []).sort((a, b) => a.displayTitle.localeCompare(b.displayTitle))
+        return (entry.episodes?.filter(ep => ep.type === "special") ?? [])
+            .sort((a, b) => a.displayTitle.localeCompare(b.displayTitle, undefined, { numeric: true }))
     }, [entry.episodes])
 
     const ncEpisodes = React.useMemo(() => {
         return (entry.episodes?.filter(ep => ep.type === "nc" && !!ep.localFile?.path) ?? []).sort((a,
             b,
-        ) => a.localFile!.path!.localeCompare(b.localFile!.path!))
+        ) => a.localFile!.path!.localeCompare(b.localFile!.path!, undefined, { numeric: true }))
     }, [entry.episodes])
 
     const hasInvalidEpisodes = React.useMemo(() => {

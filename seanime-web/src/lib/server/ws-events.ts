@@ -1,5 +1,5 @@
 export const enum WSEvents {
-    ANILIST_DATA_LOADED = "anilist-data-loaded",
+    ANILIST_DATA_LOADED = "server-ready",
     SCAN_PROGRESS = "scan-progress",
     SCAN_STATUS = "scan-status",
     REFRESHED_ANILIST_ANIME_COLLECTION = "refreshed-anilist-anime-collection",
@@ -27,7 +27,9 @@ export const enum WSEvents {
     OFFLINE_SNAPSHOT_CREATED = "offline-snapshot-created",
     MEDIASTREAM_SHUTDOWN_STREAM = "mediastream-shutdown-stream",
     EXTENSIONS_RELOADED = "extensions-reloaded",
+    EXTENSION_UPDATES_FOUND = "extension-updates-found",
     PLUGIN_UNLOADED = "plugin-unloaded",
+    PLUGIN_LOADED = "plugin-loaded",
     ACTIVE_TORRENT_COUNT_UPDATED = "active-torrent-count-updated",
     SYNC_LOCAL_QUEUE_STATE = "sync-local-queue-state",
     SYNC_LOCAL_FINISHED = "sync-local-finished",
@@ -37,6 +39,7 @@ export const enum WSEvents {
     CHECK_FOR_UPDATES = "check-for-updates",
     INVALIDATE_QUERIES = "invalidate-queries",
     CONSOLE_LOG = "console-log",
+    CONSOLE_WARN = "console-warn",
 }
 
 export const enum WebviewEvents {

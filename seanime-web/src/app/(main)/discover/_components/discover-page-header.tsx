@@ -1,11 +1,20 @@
 import { AL_BaseAnime } from "@/api/generated/types"
 import { TRANSPARENT_SIDEBAR_BANNER_IMG_STYLE } from "@/app/(main)/_features/custom-ui/styles"
 import { MediaEntryAudienceScore } from "@/app/(main)/_features/media/_components/media-entry-metadata-components"
-import { __discover_headerIsTransitioningAtom, __discover_randomTrendingAtom } from "@/app/(main)/discover/_containers/discover-trending"
+import { useMediaPreviewModal } from "@/app/(main)/_features/media/_containers/media-preview-modal"
+import {
+    __discover_animeRandomNumberAtom,
+    __discover_animeTotalItemsAtom,
+    __discover_headerIsTransitioningAtom,
+    __discover_randomTrendingAtom,
+    __discover_setAnimeRandomNumberAtom,
+} from "@/app/(main)/discover/_containers/discover-trending"
+import { __discover_mangaTotalItemsAtom } from "@/app/(main)/discover/_containers/discover-trending-country"
 import { __discord_pageTypeAtom } from "@/app/(main)/discover/_lib/discover.atoms"
 import { imageShimmer } from "@/components/shared/image-helpers"
 import { SeaLink } from "@/components/shared/sea-link"
 import { TextGenerateEffect } from "@/components/shared/text-generate-effect"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/components/ui/core/styling"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ThemeMediaPageBannerSize, ThemeMediaPageBannerType, useThemeSettings } from "@/lib/theme/hooks"
@@ -16,10 +25,68 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import React from "react"
 import { RiSignalTowerLine } from "react-icons/ri"
+import { __discover_mangaRandomNumberAtom, __discover_setMangaRandomNumberAtom } from "../_containers/discover-trending-country"
+
 
 export const __discover_hoveringHeaderAtom = atom(false)
 
 const MotionImage = motion.create(Image)
+const MotionIframe = motion.create("iframe")
+
+type HeaderCarouselDotsProps = {
+    className?: string
+}
+
+function HeaderCarouselDots({ className }: HeaderCarouselDotsProps) {
+    const ts = useThemeSettings()
+    const [pageType] = useAtom(__discord_pageTypeAtom)
+    const pathname = usePathname()
+
+    // Get the appropriate atoms based on the page type
+    const animeRandomNumber = useAtomValue(__discover_animeRandomNumberAtom)
+    const animeTotalItems = useAtomValue(__discover_animeTotalItemsAtom)
+    const setAnimeRandomNumber = useSetAtom(__discover_setAnimeRandomNumberAtom)
+
+    const mangaRandomNumber = useAtomValue(__discover_mangaRandomNumberAtom)
+    const mangaTotalItems = useAtomValue(__discover_mangaTotalItemsAtom)
+    const setMangaRandomNumber = useSetAtom(__discover_setMangaRandomNumberAtom)
+
+    // Use the appropriate values based on the page type
+    const currentIndex = pageType === "anime" ? animeRandomNumber : mangaRandomNumber
+    const totalItems = pageType === "anime" ? animeTotalItems : mangaTotalItems
+    const setCurrentIndex = pageType === "anime" ? setAnimeRandomNumber : setMangaRandomNumber
+
+    // Don't render if there are no items or only one item
+    if (totalItems <= 1) return null
+
+    // Limit to a maximum of 10 dots
+    const maxDots = Math.min(totalItems, 12)
+
+    return (
+        <div
+            data-discover-page-header-carousel-dots
+            className={cn(
+                "absolute hidden lg:flex items-center justify-center gap-2 z-[10] pl-8",
+                ts.hideTopNavbar && process.env.NEXT_PUBLIC_PLATFORM !== "desktop" && "top-[4rem]",
+                process.env.NEXT_PUBLIC_PLATFORM === "desktop" && "top-[2rem]",
+                pathname === "/" && "hidden lg:hidden",
+                className,
+            )}
+        >
+            {Array.from({ length: maxDots }).map((_, index) => (
+                <button
+                    key={index}
+                    className={cn(
+                        "h-1.5 rounded-sm transition-all duration-300 cursor-pointer",
+                        index === currentIndex ? "w-6 bg-[--muted]" : "w-3 bg-[--subtle] hover:bg-gray-300",
+                    )}
+                    onClick={() => setCurrentIndex(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                />
+            ))}
+        </div>
+    )
+}
 
 export function DiscoverPageHeader() {
     const ts = useThemeSettings()
@@ -30,7 +97,10 @@ export function DiscoverPageHeader() {
     const randomTrending = useAtomValue(__discover_randomTrendingAtom)
     const isTransitioning = useAtomValue(__discover_headerIsTransitioningAtom)
 
-    const setHoveringHeader = useSetAtom(__discover_hoveringHeaderAtom)
+    const [isHoveringHeader, setHoveringHeader] = useAtom(__discover_hoveringHeaderAtom)
+    const [showTrailer, setShowTrailer] = React.useState(false)
+    const [trailerLoaded, setTrailerLoaded] = React.useState(false)
+    const hoverTimerRef = React.useRef<NodeJS.Timeout | null>(null)
 
     // Reset page type to anime when on home page
     React.useLayoutEffect(() => {
@@ -39,9 +109,37 @@ export function DiscoverPageHeader() {
         }
     }, [pathname])
 
+    // Handle hover with timer
+    React.useEffect(() => {
+        if (isHoveringHeader && !showTrailer && (randomTrending as AL_BaseAnime)?.trailer?.id) {
+            hoverTimerRef.current = setTimeout(() => {
+                setShowTrailer(true)
+            }, 1000) // 1 second delay before showing trailer
+        } else if (!isHoveringHeader) {
+            if (hoverTimerRef.current) {
+                clearTimeout(hoverTimerRef.current)
+                hoverTimerRef.current = null
+            }
+            setShowTrailer(false)
+            setTrailerLoaded(false)
+        }
+
+        return () => {
+            if (hoverTimerRef.current) {
+                clearTimeout(hoverTimerRef.current)
+                hoverTimerRef.current = null
+            }
+        }
+    }, [isHoveringHeader, showTrailer, randomTrending])
+
     const bannerImage = randomTrending?.bannerImage || randomTrending?.coverImage?.extraLarge
+    const trailerId = (randomTrending as AL_BaseAnime)?.trailer?.id
+    const trailerSite = (randomTrending as AL_BaseAnime)?.trailer?.site || "youtube"
 
     const shouldBlurBanner = (ts.mediaPageBannerType === ThemeMediaPageBannerType.BlurWhenUnavailable && !randomTrending?.bannerImage)
+
+    const { setPreviewModalMediaId } = useMediaPreviewModal()
+
     return (
         <motion.div
             data-discover-page-header
@@ -61,6 +159,8 @@ export function DiscoverPageHeader() {
                 },
             }}
         >
+            {/* Carousel Rectangular Dots */}
+            <HeaderCarouselDots />
             <div
                 data-discover-page-header-banner-image-container
                 className={cn(
@@ -102,20 +202,47 @@ export function DiscoverPageHeader() {
                                 isTransitioning && "scale-[1.01] -translate-x-0.5",
                                 !isTransitioning && "scale-100 translate-x-0",
                                 !randomTrending?.bannerImage && "opacity-35",
+                                trailerLoaded && "opacity-0",
                             )}
                         />
                     )}
                 </AnimatePresence>
+
+                {/* Trailer */}
+                {(showTrailer && trailerId && trailerSite === "youtube") && (
+                    <div
+                        data-discover-page-header-trailer-container
+                        className={cn(
+                            "absolute w-full h-full overflow-hidden z-[1]",
+                            !trailerLoaded && "opacity-0",
+                        )}
+                    >
+                        <MotionIframe
+                            data-discover-page-header-trailer
+                            src={`https://www.youtube-nocookie.com/embed/${trailerId}?autoplay=1&controls=0&mute=1&disablekb=1&loop=1&vq=medium&playlist=${trailerId}&cc_lang_pref=ja`}
+                            className="w-full h-full absolute left-0 object-cover object-center lg:scale-[1.8] 2xl:scale-[2.5]"
+                            allow="autoplay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: trailerLoaded ? 1 : 0 }}
+                            transition={{ duration: 0.5 }}
+                            onLoad={() => setTrailerLoaded(true)}
+                            onError={() => {
+                                setShowTrailer(false)
+                                setTrailerLoaded(false)
+                            }}
+                        />
+                    </div>
+                )}
                 {shouldBlurBanner && <div
                     data-discover-page-header-banner-image-blur
                     className="absolute top-0 w-full h-full backdrop-blur-2xl z-[2] "
                 ></div>}
 
-                {/*RIGHT FADE*/}
+                {/*LEFT FADE*/}
                 <div
                     data-discover-page-header-banner-image-right-gradient
                     className={cn(
-                        "hidden lg:block max-w-[60rem] w-full z-[2] h-full absolute right-0 bg-gradient-to-l from-[--background] from-5% via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
+                        "hidden lg:block max-w-[80rem] w-full z-[2] h-full absolute left-0 bg-gradient-to-r from-[--background] from-5% via-[--background] transition-opacity via-opacity-50 via-5% to-transparent",
                         "opacity-100 duration-500",
                     )}
                 />
@@ -148,7 +275,7 @@ export function DiscoverPageHeader() {
                             },
                         }}
                         className={cn(
-                            "absolute right-2 w-fit h-[20rem] bg-gradient-to-t z-[3] hidden lg:block",
+                            "absolute left-2 w-fit h-[20rem] bg-gradient-to-t z-[3] hidden lg:block",
                             "top-[5rem]",
                             ts.hideTopNavbar && "top-[4rem]",
                             ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small && "top-[4rem]",
@@ -156,10 +283,12 @@ export function DiscoverPageHeader() {
                             (process.env.NEXT_PUBLIC_PLATFORM === "desktop" && ts.mediaPageBannerSize === ThemeMediaPageBannerSize.Small) && "top-[0rem]",
                             (process.env.NEXT_PUBLIC_PLATFORM === "desktop" && ts.mediaPageBannerSize !== ThemeMediaPageBannerSize.Small) && "top-[2rem]",
                         )}
+                        data-media-id={randomTrending?.id}
+                        data-media-mal-id={randomTrending?.idMal}
                     >
                         <div
                             data-discover-page-header-metadata-inner-container
-                            className="flex flex-row-reverse items-center relative gap-6 p-6 pr-3 w-fit overflow-hidden"
+                            className="flex items-center relative gap-6 p-6 pr-3 w-fit overflow-hidden"
                             onMouseEnter={() => setHoveringHeader(true)}
                             onMouseLeave={() => setHoveringHeader(false)}
                         >
@@ -178,7 +307,7 @@ export function DiscoverPageHeader() {
                                     data-discover-page-header-metadata-media-image-link
                                 >
                                     {randomTrending.coverImage?.large && <div
-                                        className="w-[190px] h-[290px] relative rounded-[--radius-md] overflow-hidden bg-[--background] shadow-md"
+                                        className="w-[180px] h-[280px] relative rounded-[--radius-md] overflow-hidden bg-[--background] shadow-md"
                                         data-discover-page-header-metadata-media-image-inner-container
                                     >
                                         <Image
@@ -198,11 +327,11 @@ export function DiscoverPageHeader() {
                                 </SeaLink>
                             </motion.div>
                             <motion.div
-                                className="flex-auto space-y-2 z-[1] text-center"
+                                className="flex-auto space-y-2 z-[1]"
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.5, delay: 0.6 }}
-                                data-discover-page-header-metadata-container
+                                data-discover-page-header-metadata-inner-container
                             >
                                 <SeaLink
                                     href={pageType === "anime"
@@ -211,21 +340,34 @@ export function DiscoverPageHeader() {
                                     data-discover-page-header-metadata-media-title
                                 >
                                     <TextGenerateEffect
-                                        className="[text-shadow:_0_1px_10px_rgb(0_0_0_/_20%)] text-white leading-8 line-clamp-2 pb-1 text-center max-w-md text-pretty text-3xl overflow-ellipsis"
+                                        className="[text-shadow:_0_1px_10px_rgb(0_0_0_/_20%)] text-white leading-8 line-clamp-2 pb-1 max-w-md text-pretty text-3xl overflow-ellipsis"
                                         words={randomTrending.title?.userPreferred || ""}
                                     />
                                 </SeaLink>
+                                <div className="flex flex-wrap gap-2">
+                                    {randomTrending.genres?.map((genre) => (
+                                        <div key={genre} className="text-sm font-semibold px-1 text-gray-300">
+                                            {genre}
+                                        </div>
+                                    ))}
+                                </div>
                                 {/*<h1 className="text-3xl text-gray-200 leading-8 line-clamp-2 font-bold max-w-md">{randomTrending.title?.userPreferred}</h1>*/}
-                                <div className="flex justify-center items-center max-w-md gap-4" data-discover-page-header-metadata-media-info>
+                                <div className="flex items-center max-w-lg gap-4" data-discover-page-header-metadata-media-info>
+                                    {randomTrending.meanScore &&
+                                        <div className="rounded-full w-fit inline-block" data-discover-page-header-metadata-media-score>
+                                            <MediaEntryAudienceScore
+                                                meanScore={randomTrending.meanScore}
+                                            />
+                                        </div>}
                                     {!!(randomTrending as AL_BaseAnime)?.nextAiringEpisode?.airingAt &&
                                         <p
-                                            className="text-lg text-brand-200 inline-flex items-center gap-1.5"
+                                            className="text-base text-brand-200 inline-flex items-center gap-1.5"
                                             data-discover-page-header-metadata-media-airing-now
                                         >
                                             <RiSignalTowerLine /> Releasing now
                                         </p>}
                                     {((!!(randomTrending as AL_BaseAnime)?.nextAiringEpisode || !!(randomTrending as AL_BaseAnime).episodes) && (randomTrending as AL_BaseAnime)?.format !== "MOVIE") && (
-                                        <p className="text-lg font-semibold" data-discover-page-header-metadata-media-episodes>
+                                        <p className="text-base font-medium" data-discover-page-header-metadata-media-episodes>
                                             {!!(randomTrending as AL_BaseAnime).nextAiringEpisode?.episode ?
                                                 <span>{(randomTrending as AL_BaseAnime).nextAiringEpisode?.episode! - 1} episode{(randomTrending as AL_BaseAnime).nextAiringEpisode?.episode! - 1 === 1
                                                     ? ""
@@ -236,26 +378,29 @@ export function DiscoverPageHeader() {
                                                         : "s"}</span>}
                                         </p>
                                     )}
-                                    {randomTrending.meanScore &&
-                                        <div className="rounded-full w-fit inline-block" data-discover-page-header-metadata-media-score>
-                                        <MediaEntryAudienceScore
-                                            meanScore={randomTrending.meanScore}
-                                        />
-                                    </div>}
+
                                 </div>
                                 <motion.div
-                                    className="pt-2"
+                                    className="pt-0 left-0"
                                     initial={{ opacity: 0, x: 10 }}
-                                    animate={{ opacity: 1, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 0.5, delay: 0.7 }}
                                     data-discover-page-header-metadata-media-description-container
                                 >
                                     <ScrollArea
                                         data-discover-page-header-metadata-media-description-scroll-area
-                                        className="max-w-md leading-6 h-[72px] mb-4"
+                                        className="max-w-lg leading-3 h-[77px] mb-4 p-0 text-sm"
                                     >{(randomTrending as any)?.description?.replace(
                                         /(<([^>]+)>)/ig,
                                         "")}</ScrollArea>
+
+                                    <Button
+                                        size="sm" intent="gray-outline" className="rounded-full"
+                                        // rightIcon={<ImEnlarge2 />}
+                                        onClick={() => setPreviewModalMediaId(randomTrending?.id, pageType)}
+                                    >
+                                        Preview
+                                    </Button>
                                     {/*<SeaLink*/}
                                     {/*    href={pageType === "anime"*/}
                                     {/*        ? `/entry?id=${randomTrending.id}`*/}

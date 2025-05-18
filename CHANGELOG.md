@@ -2,6 +2,71 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.8.4
+
+- ⚡️ Plugin development improvements
+    - New Discord Rich Presence event hooks
+    - New bindings for watch history, torrent client, auto downloader, external player link, filler manager
+    - Plugins in development mode that experience a fatal error can now be reloaded multiple times
+    - Uncaught exceptions are now correctly logged in the browser devtool console
+- 🦺 Fixed macOS/iOS client-side exception caused by 'upath' #238
+- 🦺 Removed 'add to list' buttons in manga download modal media cards
+- 🦺 Manga: Fixed reader keybinding editing not working on macOS desktop
+- 🦺 Fixed AniList page filters not persisting
+- 🦺 Fixed 'Advanced Search' input not being emptied when resetting search params
+- 🦺 Extensions: Fixed caught exceptions being logged as empty objects
+- 🦺 Fixed extension market button disabled by custom background image
+- 🦺 Fixed Plugin APIs
+    - Fixed DOM manipulation methods not working
+    - Correctly remove DOM elements created by plugin when unloaded
+    - Fixed incorrectly named hooks
+    - Fixed manga bindings for promises
+    - Fixed select and radio group tray components
+    - Fixed incorrect event object field mapping (Breaking)
+- 🏗️ Frontend: Replace 'upath' dependency
+
+## v2.8.3
+
+- ⚡️ Updated Playground 
+- ⚡️ Discover page: Play the trailer on hover; carousel buttons 
+- 🦺 Playground: Fix online streaming search options missing media object
+- 🦺 Discord: Fixed anime rich presence displaying old episodes
+- 🦺 Discord: Fixed manga rich presence activity #282
+- 🦺 Library: Fixed anime unwatched count for shows not in the library
+- 🦺 Library: Fixed filtering for shows not in the library
+- 🦺 Library: Fixed 'Show unwatched only' filter
+- 🦺 Torrent search: Fixed Nyaa batch search with 'any' resolution
+- 🏗️ Torrent Search: Truncate displayed language label number
+
+## v2.8.2
+
+- ✨ UI: Custom CSS support
+- ✨ In-app extension marketplace
+    - Find extensions to install directly from the interface
+- ⚡️ Discord: Rich Presence anime activity with progress track
+- ⚡️ Torrent: New 'Nyaa (Non-English)' built-in extension with smart search
+- ⚡️ Torrent search: Added labels for audio, video, subtitles, dubs
+- ⚡️ Torrent search: Improved non-smart search UI
+- ⚡️ Extensions: Built-in extensions now support user preferences
+  - API Urls are now configurable for some built-in extensions
+- ⚡️ Extensions: Auto check for updates with notification
+- ⚡️ Extensions: Added media object to Online streaming search options
+- ⚡️ Extensions: User config (preferences) now accessible with '$getUserPreference' global function
+- ⚡️ UI Settings: Color scheme live preview #277
+- ⚡️ Manga: Fullscreen toggle on mobile (Android) #279
+- 🦺 Library: Fixed genre selector making library disappear #275
+- 🦺 Online streaming: Fixed search query being altered
+- 🦺 Fixed offline mode infinite loading screen (regression from v2.7.2) #278
+- 🦺 Extensions: Fixed playground console output #276
+- 🦺 Extensions: Fixed JS extension pool memory leak
+- 🦺 Extensions: Fixed Plugin Actions API
+- 🏗️ Removed Cloudflare bypass from ComicK extension
+- 🏗️ Extensions: Deprecated 'getMagnetLinkFromTorrentData' in favor of '$torrentUtils.getMagnetLinkFromTorrentData'
+- 🏗️ Plugins: New 'ctx.anime' API
+- 🏗️ Server: Use binary (IEC) measurement on Windows and Linux #280
+- 🏗️ Extensions: Updated and fixed type declaration files
+- 🏗️ Extensions: New 'semverConstraint' field
+
 ## v2.8.1
 
 - 🦺 Fixed runtime error when launching the app for the first time

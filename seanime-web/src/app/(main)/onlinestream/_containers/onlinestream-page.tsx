@@ -28,6 +28,7 @@ import { FaSearch } from "react-icons/fa"
 import { useUpdateEffect } from "react-use"
 import "@/app/vidstack-theme.css"
 import "@vidstack/react/player/styles/default/layouts/video.css"
+import { PluginEpisodeGridItemMenuItems } from "../../_features/plugin/actions/plugin-actions"
 
 type OnlinestreamPageProps = {
     animeEntry?: Anime_Entry
@@ -103,6 +104,8 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
 
         return () => clearTimeout(t)
     }, [mediaId])
+
+    const episodeTitle = episodes?.find(e => e.number === currentEpisodeNumber)?.title
 
     function goToNextEpisode() {
         if (currentEpisodeNumber < maxEp) {
@@ -187,6 +190,7 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
             progress={{
                 currentProgress: progress,
                 currentEpisodeNumber,
+                currentEpisodeTitle: episodeTitle || null,
             }}
         >
             <OnlinestreamManagerProvider opts={opts}>
@@ -277,6 +281,8 @@ export function OnlinestreamPage({ animeEntry, animeEntryLoading, hideBackButton
                                             episodeTitle={episode.title}
                                             summary={episode?.description}
                                         />
+
+                                        <PluginEpisodeGridItemMenuItems isDropdownMenu={true} type="onlinestream" episode={episode} />
                                     </>}
                                 />
                             )

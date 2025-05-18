@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"seanime/internal/api/anilist"
+	"seanime/internal/api/metadata"
 	"seanime/internal/continuity"
 	"seanime/internal/database/db"
 	"seanime/internal/events"
 	"seanime/internal/extension"
 	"seanime/internal/goja/goja_runtime"
 	"seanime/internal/hook"
+	"seanime/internal/library/fillermanager"
 	"seanime/internal/library/playbackmanager"
 	"seanime/internal/mediaplayers/mediaplayer"
 	"seanime/internal/mediaplayers/mpv"
@@ -23,6 +25,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,10 +94,80 @@ func InitTestPlugin(t testing.TB, opts TestPluginOptions) (*GojaPlugin, *zerolog
 		hook.SetGlobalHookManager(hm)
 	}
 
-	manager := goja_runtime.NewManager(logger, int32(opts.PoolSize))
+	manager := goja_runtime.NewManager(logger)
+
+	database, err := db.NewDatabase(test_utils.ConfigData.Path.DataDir, test_utils.ConfigData.Database.Name, logger)
+	require.NoError(t, err)
+
+	plugin.GlobalAppContext.SetModulesPartial(plugin.AppContextModules{
+		Database:          database,
+		AnilistPlatform:   anilistPlatform,
+		WSEventManager:    wsEventManager,
+		AnimeLibraryPaths: &[]string{},
+		PlaybackManager:   &playbackmanager.PlaybackManager{},
+	})
 
 	plugin, _, err := NewGojaPlugin(ext, opts.Language, logger, manager, wsEventManager)
 	return plugin, logger, manager, anilistPlatform, wsEventManager, err
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+func TestGojaPluginAnime(t *testing.T) {
+	payload := `
+	function init() {
+
+		$ui.register(async (ctx) => {
+			try {
+				console.log("Fetching anime entry");
+				console.log(typeof ctx.anime.getAnimeEntry)
+ctx.anime.getAnimeEntry(21)
+				//ctx.anime.getAnimeEntry(21).then((anime) => {
+				//	console.log("Anime", anime)
+				//}).catch((e) => {
+				//	console.error("Error fetching anime entry", e)
+				//})
+			} catch (e) {
+				console.error("Error fetching anime entry", e)
+			}
+		})
+	}
+	`
+
+	opts := DefaultTestPluginOptions()
+	opts.Payload = payload
+	opts.Permissions = extension.PluginPermissions{
+		Scopes: []extension.PluginPermissionScope{
+			extension.PluginPermissionAnilist,
+			extension.PluginPermissionDatabase,
+		},
+	}
+	logger := util.NewLogger()
+	database, err := db.NewDatabase(test_utils.ConfigData.Path.DataDir, test_utils.ConfigData.Database.Name, logger)
+	require.NoError(t, err)
+
+	metadataProvider := metadata.NewProvider(&metadata.NewProviderImplOptions{
+		FileCacher: lo.Must(filecache.NewCacher(t.TempDir())),
+		Logger:     logger,
+	})
+
+	fillerManager := fillermanager.New(&fillermanager.NewFillerManagerOptions{
+		Logger: logger,
+		DB:     database,
+	})
+
+	plugin.GlobalAppContext.SetModulesPartial(plugin.AppContextModules{
+		Database:         database,
+		MetadataProvider: metadataProvider,
+		FillerManager:    fillerManager,
+	})
+
+	_, logger, manager, _, _, err := InitTestPlugin(t, opts)
+	require.NoError(t, err)
+
+	manager.PrintPluginPoolMetrics(opts.ID)
+
+	time.Sleep(3 * time.Second)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,6 +311,8 @@ function init() {
 	time.Sleep(16 * time.Second)
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 // Tests that we can register hooks and the UI handler.
 // Tests that the state updates correctly and effects run as expected.
 // Tests that we can fetch data from an external source.
@@ -331,6 +406,8 @@ func TestGojaPluginUIAndHooks(t *testing.T) {
 	time.Sleep(3 * time.Second)
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 func TestGojaPluginStore(t *testing.T) {
 	payload := `
 	function init() {
@@ -357,7 +434,7 @@ func TestGojaPluginStore(t *testing.T) {
 	opts := DefaultTestPluginOptions()
 	opts.Payload = payload
 
-	_, _, manager, anilistPlatform, _, err := InitTestPlugin(t, opts)
+	plugin, _, manager, anilistPlatform, _, err := InitTestPlugin(t, opts)
 	require.NoError(t, err)
 
 	m, err := anilistPlatform.GetAnime(178022)
@@ -375,7 +452,203 @@ func TestGojaPluginStore(t *testing.T) {
 
 	util.Spew(m.Title)
 
+	value := plugin.store.Get("value")
+	require.NotNil(t, value)
+
 	manager.PrintPluginPoolMetrics(opts.ID)
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+func TestGojaPluginJsonFieldNames(t *testing.T) {
+	payload := `
+	function init() {
+
+		$app.onPreUpdateEntryProgress((e) => {
+			console.log("pre update entry progress", e)
+
+			$store.set("mediaId", e.mediaId);
+
+			e.next();
+		});
+
+	}
+	`
+
+	opts := DefaultTestPluginOptions()
+	opts.Payload = payload
+
+	plugin, _, manager, anilistPlatform, _, err := InitTestPlugin(t, opts)
+	require.NoError(t, err)
+
+	err = anilistPlatform.UpdateEntryProgress(178022, 1, lo.ToPtr(1))
+	if err != nil {
+		t.Fatalf("GetAnime returned error: %v", err)
+	}
+
+	mediaId := plugin.store.Get("mediaId")
+	require.NotNil(t, mediaId)
+
+	manager.PrintPluginPoolMetrics(opts.ID)
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+func TestGojaPluginStorage(t *testing.T) {
+	payload := `
+	function init() {
+
+		$app.onGetAnime((e) => {
+
+			if ($storage.get("foo") !== "qux") {
+				throw new Error("foo should be qux")
+			}
+
+			$storage.set("foo", "anime")
+			console.log("foo", $storage.get("foo"))
+			$store.set("expectedValue4", "anime")
+
+			e.next();
+		});
+
+		$ui.register((ctx) => {
+			
+			$storage.set("foo", "bar")
+			console.log("foo", $storage.get("foo"))
+
+			$store.set("expectedValue1", "bar")
+
+			ctx.setTimeout(() => {
+				console.log("foo", $storage.get("foo"))
+				$storage.set("foo", "baz")
+				console.log("foo", $storage.get("foo"))
+				$store.set("expectedValue2", "baz")
+			}, 1000)
+
+			ctx.setTimeout(() => {
+				console.log("foo", $storage.get("foo"))
+				$storage.set("foo", "qux")
+				console.log("foo", $storage.get("foo"))
+				$store.set("expectedValue3", "qux")
+			}, 1500)
+			
+		})
+
+	}
+	`
+
+	opts := DefaultTestPluginOptions()
+	opts.Payload = payload
+	opts.Permissions = extension.PluginPermissions{
+		Scopes: []extension.PluginPermissionScope{
+			extension.PluginPermissionDatabase,
+			extension.PluginPermissionStorage,
+		},
+	}
+
+	plugin, _, manager, anilistPlatform, _, err := InitTestPlugin(t, opts)
+	require.NoError(t, err)
+
+	_ = plugin
+
+	manager.PrintPluginPoolMetrics(opts.ID)
+
+	time.Sleep(2 * time.Second)
+
+	_, err = anilistPlatform.GetAnime(178022)
+	require.NoError(t, err)
+
+	expectedValue1 := plugin.store.Get("expectedValue1")
+	require.Equal(t, "bar", expectedValue1)
+
+	expectedValue2 := plugin.store.Get("expectedValue2")
+	require.Equal(t, "baz", expectedValue2)
+
+	expectedValue3 := plugin.store.Get("expectedValue3")
+	require.Equal(t, "qux", expectedValue3)
+
+	expectedValue4 := plugin.store.Get("expectedValue4")
+	require.Equal(t, "anime", expectedValue4)
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+func TestGojaPluginTryCatch(t *testing.T) {
+	payload := `
+	function init() {
+
+		$ui.register((ctx) => {
+			try {
+				throw new Error("test error")
+			} catch (e) {
+				console.log("catch", e)
+				$store.set("error", e)
+			}
+
+			try {
+				undefined.f()
+			} catch (e) {
+				console.log("catch 2", e)
+				$store.set("error2", e)
+			}
+			
+		})
+
+	}
+	`
+
+	opts := DefaultTestPluginOptions()
+	opts.Payload = payload
+
+	plugin, _, manager, _, _, err := InitTestPlugin(t, opts)
+	require.NoError(t, err)
+
+	manager.PrintPluginPoolMetrics(opts.ID)
+
+	err1 := plugin.store.Get("error")
+	require.NotNil(t, err1)
+
+	err2 := plugin.store.Get("error2")
+	require.NotNil(t, err2)
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+func TestGojaSharedMemory(t *testing.T) {
+	payload := `
+	function init() {
+
+		$ui.register((ctx) => {
+			const state = ctx.state("test")
+
+			$store.set("state", state)
+			
+		})
+
+		$app.onGetAnime((e) => {
+			const state = $store.get("state")
+			console.log("state", state)
+			console.log("state value", state.get())
+			e.next();
+		})
+
+	}
+	`
+
+	opts := DefaultTestPluginOptions()
+	opts.Payload = payload
+
+	plugin, _, manager, anilistPlatform, _, err := InitTestPlugin(t, opts)
+	require.NoError(t, err)
+	_ = plugin
+
+	manager.PrintPluginPoolMetrics(opts.ID)
+
+	_, err = anilistPlatform.GetAnime(178022)
+	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////s

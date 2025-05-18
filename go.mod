@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	fyne.io/systray v1.11.0
-	github.com/5rahim/habari v0.1.4
+	github.com/5rahim/habari v0.1.6
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/Microsoft/go-winio v0.6.2
 	github.com/PuerkitoBio/goquery v1.10.0
@@ -47,7 +47,7 @@ require (
 	github.com/ziflex/lecho/v3 v3.7.0
 	golang.org/x/crypto v0.36.0
 	golang.org/x/image v0.23.0
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/term v0.30.0
 	golang.org/x/text v0.23.0
 	golang.org/x/time v0.8.0

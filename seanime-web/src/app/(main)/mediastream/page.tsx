@@ -24,6 +24,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import React from "react"
 import "@vidstack/react/player/styles/base.css"
 import { BiInfoCircle } from "react-icons/bi"
+import { PluginEpisodeGridItemMenuItems } from "../_features/plugin/actions/plugin-actions"
 import { SeaMediaPlayerProvider } from "../_features/sea-media-player/sea-media-player-provider"
 
 
@@ -80,6 +81,9 @@ export default function Page() {
     const episodeNumber = React.useMemo(() => {
         return episodes.find(ep => !!ep.localFile?.path && ep.localFile?.path === filePath)?.episodeNumber || -1
     }, [episodes, filePath])
+    const episodeTitle = React.useMemo(() => {
+        return episodes.find(ep => !!ep.localFile?.path && ep.localFile?.path === filePath)?.episodeTitle
+    }, [episodes, filePath])
 
     const progress = animeEntry?.listData?.progress
 
@@ -116,6 +120,7 @@ export default function Page() {
             progress={{
                 currentProgress: progress ?? 0,
                 currentEpisodeNumber: episodeNumber === -1 ? null : episodeNumber,
+                currentEpisodeTitle: episodeTitle || null,
             }}
         >
             <AppLayoutStack className="p-4 lg:p-8 z-[5]">
@@ -286,6 +291,8 @@ export default function Page() {
                                     isInvalid={episode.isInvalid}
                                     filename={episode.localFile?.parsedInfo?.original}
                                 />
+
+                                <PluginEpisodeGridItemMenuItems isDropdownMenu={true} type="mediastream" episode={episode} />
                             </>}
                         />
                     ))}

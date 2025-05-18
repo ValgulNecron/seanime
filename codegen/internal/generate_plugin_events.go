@@ -20,11 +20,18 @@ var (
 	additionalStructNamesForHooks = []string{
 		"discordrpc_presence.MangaActivity",
 		"discordrpc_presence.AnimeActivity",
+		"discordrpc_presence.LegacyAnimeActivity",
 		"anilist.ListAnime",
 		"anilist.ListManga",
 		"anilist.MediaSort",
 		"anilist.ListRecentAnime",
 		"anilist.AnimeCollectionWithRelations",
+		"onlinestream.Episode",
+		"continuity.WatchHistoryItem",
+		"continuity.WatchHistoryItemResponse",
+		"continuity.UpdateWatchHistoryItemOptions",
+		"continuity.WatchHistory",
+		"torrent_client.Torrent",
 	}
 )
 
@@ -543,11 +550,11 @@ func writeEventTypescriptType(f *os.File, goStruct *GoStruct, writtenTypes map[s
 			}
 
 			typeText := field.TypescriptType
-			if typeText == "Metadata" {
+			if typeText == "Habari_Metadata" {
 				typeText = "$habari.Metadata"
 			}
 
-			f.WriteString(fmt.Sprintf("        %s%s: %s;\n", convertGoToJSName(field.JsonName), fieldNameSuffix, typeText))
+			f.WriteString(fmt.Sprintf("        %s%s: %s;\n", field.JsonName, fieldNameSuffix, typeText))
 		}
 		f.WriteString("    }\n\n")
 	}

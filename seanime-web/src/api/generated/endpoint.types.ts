@@ -15,9 +15,9 @@ import type {
     Anime_LocalFileMetadata,
     ChapterDownloader_DownloadID,
     Continuity_UpdateWatchHistoryItemOptions,
+    Debrid_TorrentItem,
     DebridClient_CancelStreamOptions,
     DebridClient_StreamPlaybackType,
-    Debrid_TorrentItem,
     HibikeTorrent_AnimeTorrent,
     Mediastream_StreamType,
     Models_AnilistSettings,
@@ -552,16 +552,49 @@ export type SetDiscordMangaActivity_Variables = {
 /**
  * - Filepath: internal/handlers/discord.go
  * - Filename: discord.go
- * - Endpoint: /api/v1/discord/presence/anime
+ * - Endpoint: /api/v1/discord/presence/legacy-anime
  * @description
  * Route sets anime activity for discord rich presence.
  */
-export type SetDiscordAnimeActivity_Variables = {
+export type SetDiscordLegacyAnimeActivity_Variables = {
     mediaId: number
     title: string
     image: string
     isMovie: boolean
     episodeNumber: number
+}
+
+/**
+ * - Filepath: internal/handlers/discord.go
+ * - Filename: discord.go
+ * - Endpoint: /api/v1/discord/presence/anime
+ * @description
+ * Route sets anime activity for discord rich presence with progress.
+ */
+export type SetDiscordAnimeActivityWithProgress_Variables = {
+    mediaId: number
+    title: string
+    image: string
+    isMovie: boolean
+    episodeNumber: number
+    progress: number
+    duration: number
+    totalEpisodes?: number
+    currentEpisodeCount?: number
+    episodeTitle?: string
+}
+
+/**
+ * - Filepath: internal/handlers/discord.go
+ * - Filename: discord.go
+ * - Endpoint: /api/v1/discord/presence/anime-update
+ * @description
+ * Route updates the anime activity for discord rich presence with progress.
+ */
+export type UpdateDiscordAnimeActivityWithProgress_Variables = {
+    progress: number
+    duration: number
+    paused: boolean
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1612,7 +1645,7 @@ export type TorrentClientAddMagnetFromRule_Variables = {
 export type SearchTorrent_Variables = {
     /**
      *  "smart" or "simple"
-     *  
+     *
      *  "smart" or "simple"
      */
     type?: string

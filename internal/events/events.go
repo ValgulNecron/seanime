@@ -13,7 +13,7 @@ type WebsocketClientEvent struct {
 }
 
 const (
-	AnilistDataLoaded = "anilist-data-loaded" // The anilist data has been loaded
+	ServerReady = "server-ready" // The anilist data has been loaded
 
 	EventScanProgress               = "scan-progress"                      // Progress of the scan
 	EventScanStatus                 = "scan-status"                        // Status text of the scan
@@ -50,8 +50,10 @@ const (
 
 	MediastreamShutdownStream = "mediastream-shutdown-stream"
 
-	ExtensionsReloaded = "extensions-reloaded"
-	PluginUnloaded     = "plugin-unloaded"
+	ExtensionsReloaded    = "extensions-reloaded"
+	ExtensionUpdatesFound = "extension-updates-found"
+	PluginUnloaded        = "plugin-unloaded"
+	PluginLoaded          = "plugin-loaded"
 
 	ActiveTorrentCountUpdated = "active-torrent-count-updated"
 
@@ -64,4 +66,5 @@ const (
 
 	InvalidateQueries = "invalidate-queries"
 	ConsoleLog        = "console-log"
+	ConsoleWarn       = "console-warn"
 )

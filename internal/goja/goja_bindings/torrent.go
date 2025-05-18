@@ -1,12 +1,18 @@
 package goja_bindings
 
 import (
-	"github.com/dop251/goja"
 	"seanime/internal/torrents/torrent"
+
+	"github.com/dop251/goja"
 )
 
 func BindTorrentUtils(vm *goja.Runtime) error {
+	// TODO: Remove this once the deprecated function is removed
 	vm.Set("getMagnetLinkFromTorrentData", getMagnetLinkFromTorrentDataFunc(vm))
+
+	torrentUtils := vm.NewObject()
+	torrentUtils.Set("getMagnetLinkFromTorrentData", getMagnetLinkFromTorrentDataFunc(vm))
+	vm.Set("$torrentUtils", torrentUtils)
 
 	return nil
 }
@@ -30,7 +36,7 @@ func getMagnetLinkFromTorrentDataFunc(vm *goja.Runtime) (ret func(c goja.Functio
 
 		str, ok := call.Argument(0).Export().(string)
 		if !ok {
-			panic(vm.NewTypeError("argument is not a string").ToString())
+			panic(vm.ToValue(vm.NewTypeError("argument is not a string")))
 		}
 
 		magnet, err := torrent.StrDataToMagnetLink(str)
